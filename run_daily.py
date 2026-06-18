@@ -21,7 +21,7 @@ except Exception:
 
 import config
 from src import digest, genres
-from src.deals import get_deals, sections
+from src.deals import get_deals
 
 
 def main():
@@ -33,11 +33,10 @@ def main():
 
     print("Adding genres from Steam (cached; first run is slower)...")
     pool = genres.enrich(pool)
-    secs = sections(pool)
     today = date.today().isoformat()
     os.makedirs(config.OUTPUT_DIR, exist_ok=True)
 
-    html = digest.build_html(secs, today, pool)
+    html = digest.build_html(today, pool)
     files = {
         f"deals-{today}.html": html,
         "index.html": html,                                # latest always at index.html
@@ -48,10 +47,8 @@ def main():
         with open(os.path.join(config.OUTPUT_DIR, name), "w", encoding="utf-8") as f:
             f.write(content)
 
-    print(f"[OK] Built a {len(pool)}-deal page in {len(secs)} sections -> {config.OUTPUT_DIR}/index.html")
-    for s in secs:
-        print(f"  {s['title']}: {len(s['deals'])} deals")
-    print(f"\nOpen {config.OUTPUT_DIR}/index.html in your browser to see the page.")
+    print(f"[OK] Built a {len(pool)}-deal page -> {config.OUTPUT_DIR}/index.html")
+    print(f"Open {config.OUTPUT_DIR}/index.html in your browser to see the page.")
 
 
 if __name__ == "__main__":
