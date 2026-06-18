@@ -1,0 +1,7 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Generated output (GitHub Actions rebuilds this on every run, so we don't commit it)
+output/
