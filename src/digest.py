@@ -86,14 +86,15 @@ _PAGE = """<!doctype html>
     <select id="bsort" class="ctrl"><option value="">Sort: Best</option><option value="discount">Biggest discount</option><option value="price-low">Lowest price</option><option value="rating">Highest rated</option><option value="popular">Most popular</option></select>
     <select id="bcurrency" class="ctrl">{currency_options}</select>
   </div>
-  <p class="disclosure">⚠️ Prices are indicative and can change at any time. Non-USD prices are
-  converted estimates — <b>not</b> the store's exact regional price. Always confirm the final
-  price on the store before buying.</p>
   <div class="grid" id="browse-grid">
 {browse_grid}
   </div>
   <p class="noresults" id="bnoresults">No games match your filters.</p>
 </section>
+
+<section><p class="disclosure">⚠️ Prices are indicative and can change at any time. Non-USD prices are
+converted estimates — <b>not</b> the store's exact regional price. Always confirm the final price
+on the store before buying.</p></section>
 
 <footer>
   <p>{site} surfaces the best current PC game discounts from across the major stores, refreshed daily.</p>

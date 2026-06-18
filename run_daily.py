@@ -10,7 +10,7 @@ Task Scheduler and your site updates itself every day — that's the whole point
 
 import os
 import sys
-from datetime import date
+from datetime import date, datetime, timezone
 
 # Windows consoles default to cp1252 and choke on emoji in our section titles;
 # force UTF-8 so local runs print cleanly. (GitHub Actions/Linux is already UTF-8.)
@@ -35,15 +35,16 @@ def main():
     pool = genres.enrich(pool)
     print("Fetching exchange rates...")
     rates = currency.get_rates()
-    today = date.today().isoformat()
+    today = date.today().isoformat()                                   # date only, for filenames
+    stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")   # full timestamp, for display
     os.makedirs(config.OUTPUT_DIR, exist_ok=True)
 
-    html = digest.build_html(today, pool, rates)
+    html = digest.build_html(stamp, pool, rates)
     files = {
         f"deals-{today}.html": html,
         "index.html": html,                                # latest always at index.html
-        f"deals-{today}.md": digest.build_markdown(pool, today),
-        f"social-{today}.txt": digest.build_social(pool, today),
+        f"deals-{today}.md": digest.build_markdown(pool, stamp),
+        f"social-{today}.txt": digest.build_social(pool, stamp),
     }
     for name, content in files.items():
         with open(os.path.join(config.OUTPUT_DIR, name), "w", encoding="utf-8") as f:
