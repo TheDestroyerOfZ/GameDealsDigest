@@ -13,8 +13,7 @@ You'll do these once. It's clicking, not coding. ~20 minutes.
 
 ### 1. Put the project on GitHub
 1. Install and open **GitHub Desktop**, sign in with your GitHub account.
-2. **File → Add Local Repository** → choose
-   `C:\Users\Duncan-PC\Desktop\GameDealsDigest`.
+2. **File → Add Local Repository** → choose your `GameDealsDigest` folder.
 3. It'll say "this isn't a git repository" → click **"create a repository"** → **Create**.
 4. Click **Publish repository** (top bar).
    - **Uncheck** "Keep this code private" (Pages needs it public, and public is fine).
@@ -45,6 +44,5 @@ Buy a domain (Namecheap, Cloudflare) and point it at GitHub Pages (Settings → 
 Custom domain). Totally optional — the free `github.io` URL works fine to start.
 
 ## Next
-Once it's live, come back and we'll **apply to affiliate programs** and add your tags so
-clicks can start earning — and then start on the software/SaaS income version (see
-`PLAN.md`).
+Once it's live, apply to store **affiliate programs** (Fanatical / Green Man Gaming /
+Humble) and add your tags to `AFFILIATE` in `config.py` so clicks can start earning.
