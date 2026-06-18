@@ -81,7 +81,9 @@ def get_deals():
             "thumb": d.get("thumb"),
             "steam_pct": d.get("steamRatingPercent"),
             "steam_reviews": _to_int(d.get("steamRatingCount")),
+            "steam_app_id": d.get("steamAppID"),
             "metacritic": meta if meta > 0 else None,
+            "genres": [],                      # filled in later by genres.enrich()
         }
         key = title.lower()
         if key in seen:                                    # same game, another store

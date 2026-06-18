@@ -20,7 +20,7 @@ except Exception:
     pass
 
 import config
-from src import digest
+from src import digest, genres
 from src.deals import get_deals, sections
 
 
@@ -31,6 +31,8 @@ def main():
         print("No deals matched your filters today. Try loosening the limits in config.py.")
         return
 
+    print("Adding genres from Steam (cached; first run is slower)...")
+    pool = genres.enrich(pool)
     secs = sections(pool)
     today = date.today().isoformat()
     os.makedirs(config.OUTPUT_DIR, exist_ok=True)
