@@ -20,7 +20,7 @@ except Exception:
     pass
 
 import config
-from src import digest, genres
+from src import currency, digest, genres
 from src.deals import get_deals
 
 
@@ -33,10 +33,12 @@ def main():
 
     print("Adding genres from Steam (cached; first run is slower)...")
     pool = genres.enrich(pool)
+    print("Fetching exchange rates...")
+    rates = currency.get_rates()
     today = date.today().isoformat()
     os.makedirs(config.OUTPUT_DIR, exist_ok=True)
 
-    html = digest.build_html(today, pool)
+    html = digest.build_html(today, pool, rates)
     files = {
         f"deals-{today}.html": html,
         "index.html": html,                                # latest always at index.html

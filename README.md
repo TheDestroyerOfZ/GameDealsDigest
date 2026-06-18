@@ -11,9 +11,9 @@ Actions, hosted free on GitHub Pages.
 - Live deals across major stores (Steam, GOG, Fanatical, Humble, Green Man Gaming, …)
 - Quality gate — only real games with genuine Steam reviews (filters out DLC/asset spam)
 - Genre tags (via Steam) + Steam rating, review count, and Metacritic on each card
-- Curated sections — Today's Best, Biggest Discounts, Top Rated, Under $5
-- Browse-all tool — search + genre/store/price filters + sort, all client-side
-- Self-updating daily in the cloud (GitHub Actions) — no server, $0 to run
+- Browse tool — search + genre / store / price / sort, all client-side
+- Multi-currency display (USD source, converted via live rates) + a price disclaimer
+- Self-updating every 8 hours in the cloud (GitHub Actions) — no server, $0 to run
 
 ## Setup
 ```powershell

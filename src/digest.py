@@ -10,6 +10,8 @@ The page has two parts:
      all running in the browser (no backend needed — perfect for static hosting).
 """
 
+import json
+
 import config
 from src.affiliate import deal_link
 from src.genres import all_genres
@@ -57,6 +59,8 @@ _PAGE = """<!doctype html>
   .buy {{ margin-top:auto; text-align:center; background:#2563eb; color:#fff; text-decoration:none;
           padding:9px; border-radius:8px; font-weight:600; }}
   .buy:hover {{ background:#1d4ed8; }}
+  .disclosure {{ margin:0 0 16px; padding:10px 14px; border-radius:8px; font-size:.78rem;
+                 color:#d9c08a; background:#221c0e; border:1px solid #443613; }}
   .noresults {{ text-align:center; color:#717b8c; padding:30px; display:none; }}
   footer {{ text-align:center; color:#717b8c; font-size:.8rem; padding:30px 16px; max-width:720px; margin:0 auto; line-height:1.5; }}
   footer a {{ color:#9ecbff; }}
@@ -78,9 +82,13 @@ _PAGE = """<!doctype html>
     <input id="bsearch" class="ctrl" type="search" placeholder="🔍 Search games...">
     <select id="bgenre" class="ctrl"><option value="">All genres</option>{genre_options}</select>
     <select id="bstore" class="ctrl"><option value="">All stores</option>{store_options}</select>
-    <select id="bprice" class="ctrl"><option value="">Any price</option><option value="5">Under $5</option><option value="15">Under $15</option><option value="30">Under $30</option></select>
+    <select id="bprice" class="ctrl"><option value="">Any price</option><option value="5">Under $5 (USD)</option><option value="15">Under $15 (USD)</option><option value="30">Under $30 (USD)</option></select>
     <select id="bsort" class="ctrl"><option value="">Sort: Best</option><option value="discount">Biggest discount</option><option value="price-low">Lowest price</option><option value="rating">Highest rated</option><option value="popular">Most popular</option></select>
+    <select id="bcurrency" class="ctrl">{currency_options}</select>
   </div>
+  <p class="disclosure">⚠️ Prices are indicative and can change at any time. Non-USD prices are
+  converted estimates — <b>not</b> the store's exact regional price. Always confirm the final
+  price on the store before buying.</p>
   <div class="grid" id="browse-grid">
 {browse_grid}
   </div>
@@ -125,6 +133,19 @@ _PAGE = """<!doctype html>
   [bq,bgen,bst,bpr,bso].forEach(el => {{
     el.addEventListener('input', browseApply); el.addEventListener('change', browseApply);
   }});
+
+  // --- Currency conversion (USD source -> selected currency, approximate) ---
+  const RATES = {rates_json}, SYMBOLS = {symbols_json};
+  const cur = document.getElementById('bcurrency');
+  function applyCurrency() {{
+    const c = cur.value, rate = RATES[c] || 1, sym = SYMBOLS[c] || '$';
+    document.querySelectorAll('.sale, .normal').forEach(el => {{
+      const usd = parseFloat(el.dataset.usd); if (isNaN(usd)) return;
+      const v = usd * rate;
+      el.textContent = sym + (c === 'JPY' ? Math.round(v).toLocaleString() : v.toFixed(2));
+    }});
+  }}
+  cur.addEventListener('change', applyCurrency);
 </script>
 </body></html>"""
 
@@ -150,8 +171,8 @@ def _card(d):
     {thumb}
     <div class="info">
       <h3>{d['title']}</h3>
-      <p class="price"><span class="sale">${d['sale_price']:.2f}</span>
-        <span class="normal">${d['normal_price']:.2f}</span><span class="save">-{d['savings_pct']}%</span></p>
+      <p class="price"><span class="sale" data-usd="{d['sale_price']}">${d['sale_price']:.2f}</span>
+        <span class="normal" data-usd="{d['normal_price']}">${d['normal_price']:.2f}</span><span class="save">-{d['savings_pct']}%</span></p>
       <div class="badges">{badges_html}</div>
       <p class="store">{d['store']}</p>
       {genres_line}
@@ -160,21 +181,27 @@ def _card(d):
   </div>"""
 
 
-def build_html(date_str, pool):
+def build_html(date_str, pool, rates=None):
     """
     The publishable web page: the Browse-All tool (toolbar + full grid) right at the
     top, so the filter/sort controls are the first thing visitors see. The grid leads
     with the most-reviewed (= most recognizable) games by default; the Sort control
-    covers Biggest Discount / Lowest Price / Highest Rated on demand.
+    covers Biggest Discount / Lowest Price / Highest Rated on demand. `rates` powers the
+    in-browser currency switcher (USD source → selected currency, approximate).
     """
+    rates = rates or {"USD": 1.0}
     ordered = sorted(pool, key=lambda d: -(d.get("steam_reviews") or 0))
     browse_grid = "\n".join(_card(d) for d in ordered)
     max_save = max((d["savings_pct"] for d in pool), default=0)
     genre_opts = "".join(f'<option value="{g.lower()}">{g}</option>' for g in all_genres(pool))
     store_opts = "".join(f'<option value="{s}">{s}</option>' for s in sorted({d["store"] for d in pool}))
+    cur_opts = "".join(f'<option value="{c}">{c} {config.CURRENCY_SYMBOLS.get(c, "")}</option>'
+                       for c in config.CURRENCIES if c in rates)
     return _PAGE.format(site=config.SITE_NAME, tagline=config.SITE_TAGLINE, date=date_str,
-                        count=len(pool), max_save=max_save,
-                        genre_options=genre_opts, store_options=store_opts, browse_grid=browse_grid)
+                        count=len(pool), max_save=max_save, genre_options=genre_opts,
+                        store_options=store_opts, currency_options=cur_opts,
+                        rates_json=json.dumps(rates),
+                        symbols_json=json.dumps(config.CURRENCY_SYMBOLS), browse_grid=browse_grid)
 
 
 def build_markdown(deals, date_str):

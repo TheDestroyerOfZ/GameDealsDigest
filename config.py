@@ -36,6 +36,14 @@ AFFILIATE = {
     # "Green Man Gaming": "...",
 }
 
+# --- Currency ---
+# CheapShark prices are USD. We convert to these via live exchange rates so visitors
+# can switch currency. Converted prices are APPROXIMATE (not the store's exact regional
+# price) — the on-page disclosure says so. First entry is the default shown.
+CURRENCIES = ["USD", "NZD", "EUR", "GBP", "AUD", "CAD", "JPY"]
+CURRENCY_SYMBOLS = {"USD": "$", "NZD": "NZ$", "EUR": "€", "GBP": "£",
+                    "AUD": "A$", "CAD": "C$", "JPY": "¥"}
+
 # --- Output + branding ---
 OUTPUT_DIR = "output"
 SITE_NAME = "Daily Game Deals"
