@@ -70,7 +70,7 @@ _PAGE = """<!doctype html>
   </div>
 </header>
 
-{sections}
+{highlight}
 
 <section id="browse">
   <h2>🔎 Browse All Deals</h2>
@@ -161,17 +161,23 @@ def _card(d):
 
 
 def build_html(sections, date_str, pool):
-    """The publishable web page: curated highlight sections + a Browse-All tool."""
-    blocks = []
-    for s in sections:
+    """
+    The publishable web page: one compact "Today's Best" highlight row, then the
+    Browse-All tool (toolbar + full grid) right up top where it's actually usable.
+    The Sort control covers Biggest Discount / Lowest Price / Highest Rated, so those
+    no longer need to be separate sections.
+    """
+    highlight = ""
+    if sections:
+        s = sections[0]                          # "Today's Best Deals" (recognizable games)
         cards = "\n".join(_card(d) for d in s["deals"])
-        blocks.append(f'<section><h2>{s["title"]}</h2>\n<div class="grid">\n{cards}\n</div></section>')
+        highlight = f'<section><h2>{s["title"]}</h2>\n<div class="grid">\n{cards}\n</div></section>'
     browse_grid = "\n".join(_card(d) for d in pool)
     max_save = max((d["savings_pct"] for d in pool), default=0)
     genre_opts = "".join(f'<option value="{g.lower()}">{g}</option>' for g in all_genres(pool))
     store_opts = "".join(f'<option value="{s}">{s}</option>' for s in sorted({d["store"] for d in pool}))
     return _PAGE.format(site=config.SITE_NAME, tagline=config.SITE_TAGLINE, date=date_str,
-                        count=len(pool), max_save=max_save, sections="\n".join(blocks),
+                        count=len(pool), max_save=max_save, highlight=highlight,
                         genre_options=genre_opts, store_options=store_opts, browse_grid=browse_grid)
 
 
