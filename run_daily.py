@@ -9,37 +9,46 @@ Task Scheduler and your site updates itself every day — that's the whole point
 """
 
 import os
+import sys
 from datetime import date
+
+# Windows consoles default to cp1252 and choke on emoji in our section titles;
+# force UTF-8 so local runs print cleanly. (GitHub Actions/Linux is already UTF-8.)
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+except Exception:
+    pass
 
 import config
 from src import digest
-from src.deals import get_deals
+from src.deals import get_deals, sections
 
 
 def main():
     print("Fetching today's best game deals...")
-    deals = get_deals()
-    if not deals:
+    pool = get_deals()
+    if not pool:
         print("No deals matched your filters today. Try loosening the limits in config.py.")
         return
 
+    secs = sections(pool)
     today = date.today().isoformat()
     os.makedirs(config.OUTPUT_DIR, exist_ok=True)
 
+    html = digest.build_html(secs, today, pool)
     files = {
-        f"deals-{today}.html": digest.build_html(deals, today),
-        "index.html": digest.build_html(deals, today),     # latest always at index.html
-        f"deals-{today}.md": digest.build_markdown(deals, today),
-        f"social-{today}.txt": digest.build_social(deals, today),
+        f"deals-{today}.html": html,
+        "index.html": html,                                # latest always at index.html
+        f"deals-{today}.md": digest.build_markdown(pool, today),
+        f"social-{today}.txt": digest.build_social(pool, today),
     }
     for name, content in files.items():
         with open(os.path.join(config.OUTPUT_DIR, name), "w", encoding="utf-8") as f:
             f.write(content)
 
-    print(f"[OK] Built a digest of {len(deals)} deals -> {config.OUTPUT_DIR}/index.html")
-    print("Top picks today:")
-    for d in deals[:5]:
-        print(f"  - {d['title']}: ${d['sale_price']:.2f} (-{d['savings_pct']}%) @ {d['store']}")
+    print(f"[OK] Built a {len(pool)}-deal page in {len(secs)} sections -> {config.OUTPUT_DIR}/index.html")
+    for s in secs:
+        print(f"  {s['title']}: {len(s['deals'])} deals")
     print(f"\nOpen {config.OUTPUT_DIR}/index.html in your browser to see the page.")
 
 

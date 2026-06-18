@@ -25,6 +25,14 @@ def _fetch_raw():
     return deals
 
 
+def _to_int(value):
+    """Best-effort int conversion (yfinance/CheapShark sometimes send strings/None)."""
+    try:
+        return int(value or 0)
+    except (ValueError, TypeError):
+        return 0
+
+
 def _is_real_game(d):
     """Keep only games with genuine Steam reviews — filters out DLC/asset-pack spam."""
     try:
@@ -59,6 +67,10 @@ def get_deals():
         if not title:
             continue
 
+        try:
+            meta = int(d.get("metacriticScore") or 0)
+        except (ValueError, TypeError):
+            meta = 0
         item = {
             "title": title,
             "sale_price": round(sale, 2),
@@ -68,6 +80,8 @@ def get_deals():
             "deal_id": d.get("dealID"),
             "thumb": d.get("thumb"),
             "steam_pct": d.get("steamRatingPercent"),
+            "steam_reviews": _to_int(d.get("steamRatingCount")),
+            "metacritic": meta if meta > 0 else None,
         }
         key = title.lower()
         if key in seen:                                    # same game, another store
@@ -78,3 +92,25 @@ def get_deals():
             cleaned.append(item)
 
     return cleaned[:config.MAX_DEALS]                       # already quality-sorted by the API
+
+
+def sections(pool, per_section=8):
+    """
+    Split the deal pool into themed sections for a richer page. A game can appear in
+    more than one section (e.g. both a big discount AND top rated) — that's normal.
+    """
+    by_rating = sorted((d for d in pool if d.get("steam_pct")),
+                       key=lambda d: -int(d["steam_pct"]))
+    by_savings = sorted(pool, key=lambda d: -d["savings_pct"])
+    by_popular = sorted(pool, key=lambda d: -(d.get("steam_reviews") or 0))
+    budget = sorted((d for d in pool if d["sale_price"] <= 5),
+                    key=lambda d: -d["savings_pct"])
+    out = [
+        # Lead with the most-reviewed (= most recognizable) games for a strong first impression.
+        {"title": "🎮 Today's Best Deals", "deals": by_popular[:per_section]},
+        {"title": "🔥 Biggest Discounts", "deals": by_savings[:per_section]},
+        {"title": "⭐ Top Rated", "deals": by_rating[:per_section]},
+    ]
+    if budget:
+        out.append({"title": "💸 Under $5", "deals": budget[:per_section]})
+    return [s for s in out if s["deals"]]

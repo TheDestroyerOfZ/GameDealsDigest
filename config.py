@@ -14,9 +14,9 @@ SORT_BY = "Deal Rating"   # CheapShark's own quality score (blends price, saving
 MIN_SAVINGS = 30          # only show deals at least this % off
 MIN_PRICE = 1.0           # skip $0 "starter pack"/DLC spam (sale price must be >= this)
 MAX_PRICE = 40.0          # focus on affordable deals people actually buy
-MAX_DEALS = 15            # how many games to feature in each digest
+MAX_DEALS = 60            # size of the deal pool we build the sections from
 FETCH_PAGE_SIZE = 60      # deals per API page (CheapShark max is 60)
-FETCH_PAGES = 4           # how many pages to pull before filtering (more = better choice)
+FETCH_PAGES = 6           # how many pages to pull before filtering (more = better choice)
 
 # Quality gate: only feature REAL games with genuine Steam reviews. This is what
 # filters out DLC, asset packs, soundtracks, and shovelware.
